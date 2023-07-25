@@ -1,7 +1,5 @@
 import { Request, Response } from "express"
-import { UserService } from '../services/UserServices'
-
-const userService = new UserService()
+import { UserService } from '../services/UserService'
 
 export class UserController {
     userService: UserService
@@ -15,25 +13,28 @@ export class UserController {
     createUser = (req: Request, res: Response) => {
         const user = req.body
 
-        if (!user.name) {
-            return res.status(400).json({ message: "Bad Request: invalid name" })
+        if (!user.name || !user.email || !user.password) {
+            return res.status(400).json({ message: "Bad Request: invalid name, email or password" })
         }
-        if (!user.email) {
-            return res.status(400).json({ message: "Bad Request: invalid email" })
-        }
-        this.userService.createUser(user.name, user.email)
+        
+        this.userService.createUser(user.name, user.email, user.password)
         return res.status(201).json({ message: "201 - CREATED" })
 
     }
 
-    listUsers = (req: Request, res: Response) => {
-        const listUsers = this.userService.listUsers()
-        return res.status(200).json({ listUsers })
+    getUser = async (req: Request, res: Response) => {
+        const { userId } = req.params
+        const user = await this.userService.getUser(userId)
+        return res.status(200).json({
+            userId: user?.id_user,
+            name: user?.name,
+            email: user?.email
+        })
     }
 
-    deleteUser = (req: Request, res: Response) => {
-        const deleteUser = this.userService.deleteUser()
-        return res.status(200).json({ deleteUser })
-    }
+     deleteUser = (req: Request, res: Response) => {
+         const deleteUser = this.userService.deleteUser()
+         return res.status(200).json({ deleteUser })
+     }
 
 }
